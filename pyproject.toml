@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shelfmark"
+version = "1.1.0"
+description = "Shelfmark — give every document its true name: \"Author - Title [year]\""
+authors = [{ name = "Sergei Korneev (AI coded)" }]
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = []          # standard library + system tools only
+
+[project.scripts]
+shelfmark = "shelfmark.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["shelfmark*"]
