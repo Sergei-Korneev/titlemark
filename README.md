@@ -23,7 +23,7 @@ over file metadata, the text layer, and OCR for scans.
 | EPUB   | package.opf (dc:title, dc:creator, dc:date) | – | – |
 | FB2    | title-info (book-title, author, date) | – | – |
 | MOBI   | PalmDB + EXTH (title, author, date) | – | – |
-| DJVU   | ANTa annotations (title, author) | – | – |
+| DJVU   | ANTa annotations (title, author) | djvutxt (djvulibre) | ddjvu + tesseract |
 | DOCX   | docProps/core.xml | first paragraphs | – |
 
 **Files without an extension** (hash-named downloads) are recognised by their
@@ -35,11 +35,13 @@ proper extension. The same works for files with a wrong or unknown extension.
 
 * Python ≥ 3.10, standard library only;
 * for PDF: `poppler-utils` (`pdfinfo`, `pdftotext`, `pdftoppm`);
-* for scans (optional): `tesseract` with `rus+eng` language packs.
+* for scans (optional): `tesseract` with `rus+eng` language packs;
+* for DjVu (optional): `djvulibre` tools (`djvutxt`, `ddjvu`) — without them
+  DjVu text/OCR is unavailable (annotations ANTa are still read).
 
 ```bash
 # Debian/Ubuntu
-sudo apt install poppler-utils tesseract-ocr tesseract-ocr-rus tesseract-ocr-eng
+sudo apt install poppler-utils tesseract-ocr tesseract-ocr-rus tesseract-ocr-eng djvulibre-bin
 ```
 
 ## Install & run

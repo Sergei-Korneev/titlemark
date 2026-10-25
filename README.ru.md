@@ -23,7 +23,7 @@
 | EPUB   | package.opf (dc:title, dc:creator, dc:date) | – | – |
 | FB2    | title-info (book-title, author, date) | – | – |
 | MOBI   | PalmDB + EXTH (title, author, date) | – | – |
-| DJVU   | аннотации ANTa (title, author) | – | – |
+| DJVU   | аннотации ANTa (title, author) | djvutxt (djvulibre) | ddjvu + tesseract |
 | DOCX   | docProps/core.xml | первые абзацы | – |
 
 **Файлы без расширения** (имена-хэши в папках загрузок) распознаются по
@@ -36,11 +36,13 @@
 
 * Python ≥ 3.10, только стандартная библиотека;
 * для PDF: `poppler-utils` (`pdfinfo`, `pdftotext`, `pdftoppm`);
-* для сканов (опционально): `tesseract` с языковыми пакетами `rus+eng`.
+* для сканов (опционально): `tesseract` с языковыми пакетами `rus+eng`;
+* для DjVu (опционально): утилиты `djvulibre` (`djvutxt`, `ddjvu`) — без них
+  текст/OCR DjVu недоступны (аннотации ANTa читаются и без них).
 
 ```bash
 # Debian/Ubuntu
-sudo apt install poppler-utils tesseract-ocr tesseract-ocr-rus tesseract-ocr-eng
+sudo apt install poppler-utils tesseract-ocr tesseract-ocr-rus tesseract-ocr-eng djvulibre-bin
 ```
 
 ## Установка и запуск
