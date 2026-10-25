@@ -248,6 +248,13 @@ def plan_rename(
         info.author = fb_author
         info.author_source = Source.FILENAME
 
+    # название не должно начинаться с повтора автора
+    # («Valrog - ГОСУДАРСТВЕННОЕ…» из имени файла при авторе «Valrog»)
+    if info.author and info.title:
+        prefix = f"{info.author.casefold()} - "
+        if info.title.casefold().startswith(prefix):
+            info.title = info.title[len(prefix):].strip(" -")
+
     # явный флаг --ai: спросить vision-модель по обложке (ответ главнее всего)
     if ai is not None:
         from .ai import enrich_with_ai

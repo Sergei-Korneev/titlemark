@@ -17,19 +17,21 @@ from .textclean import (
     clean_title,
     is_author_line,
     is_junk_title,
+    is_label_line,
     is_service_line,
     strip_special,
 )
 
 # --- паттерны имён ----------------------------------------------------------
 
-# «Фамилия И. О.» / «Фамилия, И. О.» / «И. О. Фамилия»
+# «Фамилия И. О.» / «Фамилия, И. О.» / «И. О. Фамилия» (фамилия может быть капсом)
 _INITIALS_NAME_RE = re.compile(
-    r"^\s*[А-ЯЁA-Z][а-яёa-z]+\s*,?\s+[А-ЯЁA-Z]\.\s*[А-ЯЁA-Z]\.\s*$"
+    r"^\s*([А-ЯЁA-Z][а-яёa-z]+(-[а-яёa-z]+)*|[А-ЯЁA-Z]{2,})\s*,?\s+"
+    r"[А-ЯЁA-Z]\.\s*[А-ЯЁA-Z]\.\s*$"
 )
 _INITIALS_FIRST_RE = re.compile(
-    r"^\s*([А-ЯЁA-Z]\.\s*){1,2}[А-ЯЁ][а-яё]+"
-    r"(\s*,\s*([А-ЯЁA-Z]\.\s*){1,2}[А-ЯЁ][а-яё]+)*\s*$"
+    r"^\s*([А-ЯЁA-Z]\.\s*){1,2}([А-ЯЁ][а-яё]+(-[а-яё]+)*|[А-ЯЁ]{2,})"
+    r"(\s*,\s*([А-ЯЁA-Z]\.\s*){1,2}([А-ЯЁ][а-яё]+(-[а-яё]+)*|[А-ЯЁ]{2,}))*\s*$"
 )
 _EN_BY_RE = re.compile(r"^\s*by\s+[A-Z][A-Za-z'’\-.]+(\s+[A-Z][A-Za-z'’\-.]+){1,3}\s*$")
 _RU_AUTHOR_LABEL_RE = re.compile(r"^\s*(автор|author|редактор|перевод)\s*[:—-]", re.IGNORECASE)
@@ -71,9 +73,16 @@ def looks_like_author(text: str) -> bool:
 
 
 def extract_author_from_line(text: str) -> str:
-    """Достать имя из строки-подписи автора (убрать «Автор:», «by»)."""
+    """Достать имя из строки-подписи автора (убрать «Автор:», «by», «под ред.»).
+
+    Если после метки ничего не осталось («под редакцией» без имени) — "".
+    """
     t = text.strip()
-    t = re.sub(r"^\s*(by|author|автор|редактор|перевод)\s*[:—-]?\s*", "", t, flags=re.IGNORECASE)
+    t = re.sub(
+        r"^\s*(by|author|authors|автор\w*|редактор\w*|под\s+ред\.?|"
+        r"под\s+редакцией|составитель|переводчик|перевод\w*|"
+        r"edited\s+by|translated\s+by|compiled\s+by|red\.)\s*[:—-]?\s*",
+        "", t, flags=re.IGNORECASE)
     return t.strip(" .,-–—")
 
 
@@ -235,7 +244,7 @@ def find_author(lines: list[str], exclude_title: str = "") -> str:
     for line in head:
         if not excluded(line) and looks_like_author_strict(line):
             name = extract_author_from_line(line)
-            if len(name.split()) >= 2 or re.search(r"[А-ЯЁA-Z]\.", name):
+            if name and (len(name.split()) >= 2 or re.search(r"[А-ЯЁA-Z]\.", name)):
                 return name
 
     # третий проход: неоднозначные ЗАГЛАВНЫЕ имена, не вошедшие в название
@@ -251,6 +260,25 @@ _CONTINUATION_RE = re.compile(r"^[a-zа-яё0-9]")
 _MERGE_MAX_CHARS = 58
 _MERGE_MAX_LINES = 3
 _MERGE_MAX_LINE_CHARS = 48
+
+
+def join_fragment_lines(lines: list[str]) -> list[str]:
+    """Склеить строки, разбитые посреди фразы (особенность djvutxt/вёрстки).
+
+    «Кибернетический» + «сборник» → «Кибернетический сборник»:
+    одно слово + следующее одно слово со строчной буквы = одна фраза.
+    """
+    out: list[str] = []
+    for line in lines:
+        prev = out[-1] if out else ""
+        if (prev and line and len(prev) + len(line) <= 60
+                and not prev.endswith((".", "!", ";", ":"))
+                and len(prev.split()) == 1 and len(line.split()) == 1
+                and line[:1].islower()):
+            out[-1] = f"{prev} {line}"
+        else:
+            out.append(line)
+    return out
 
 
 def _norm_name(text: str) -> str:
@@ -304,6 +332,7 @@ def merge_title(lines: list[str], title: str) -> str:
                     or len(merged) + len(nxt) + 1 > _MERGE_MAX_CHARS
                     or looks_like_author_strict(nxt) or is_person_name(nxt)
                     or is_service_line(nxt) or is_junk_title(nxt)
+                    or is_label_line(nxt)
                     or nxt.endswith((".", "!", ";", ":"))):
                 break
             if _CONTINUATION_RE.match(nxt) or _title_case_ratio(nxt) >= 0.6:

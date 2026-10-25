@@ -70,6 +70,18 @@ class TestFindAuthor(unittest.TestCase):
         lines = ["КЛИНКА, ЕТЮЛОПЯ ТА ПАТОГЕНЕЗ", "Н. В. Карабань, А. В. Гудзенко"]
         self.assertEqual(find_author(lines), "Н. В. Карабань, А. В. Гудзенко")
 
+    def test_initials_first_caps_surname(self):
+        # «под редакцией О. Б. ЛУПАНОВА» — редактор, а не название
+        lines = ["Кибернетический сборник", "О. Б. ЛУПАНОВА", "ИЗДАТЕЛЬСТВО «МИР»"]
+        title, _, _ = find_title(lines)
+        self.assertIn("Кибернетический", title)
+        self.assertEqual(find_author(lines, exclude_title=title), "О. Б. ЛУПАНОВА")
+
+    def test_editor_label_is_not_author(self):
+        # «под редакцией» — служебная подпись, а не имя
+        lines = ["Кибернетический сборник", "под редакцией", "О. Б. ЛУПАНОВА"]
+        self.assertEqual(find_author(lines), "О. Б. ЛУПАНОВА")
+
     def test_caps_name_not_title(self):
         lines = ["АРТУР ДУМЧЕВ", "ПОМНИТЬ ВСЕ",
                  "ПРАКТИЧЕСКОЕ РУКОВОДСТВО",

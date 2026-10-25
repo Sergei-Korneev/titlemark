@@ -28,6 +28,9 @@ _JUNK_TITLE_PATTERNS = [
     # служебные надписи
     r"^содержание$", r"^оглавление$", r"^title$", r"^cover$",
     r"^title\.\d+", r"^aspose\b", r"\baspose\b",
+    # нумерованные строки-разделы: «1. ВВЕДЕНИЕ», «2.3 ОСНОВНЫЕ ПОНЯТИЯ»
+    # (только ЗАГЛАВНЫЕ — регистр важен, поэтому (?-i:...))
+    r"^\d+(\.\d+)*\.?\s+((?-i:[А-ЯЁA-Z]){2,}\s*){1,4}$",
     r"^a\s+(novel|book|memoir|thriller)$", r"^(роман|повесть|учебное пособие)$",
     r"^(слайд|slide|таблица|table|рисунок|figure|рис\.)\s*\d*$",
     r"^generated\s+by", r"^produced\s+by", r"^converted\s+by",
@@ -87,8 +90,19 @@ _PUBLISHER_LINE_RE = re.compile(
     re.IGNORECASE | re.VERBOSE,
 )
 
-# строка серии: «СЕРИЯ "Для тех, кто хочет стать профессионалом"»
-_SERIES_LINE_RE = re.compile(r"^\s*[«\"'`]*серия\b|^\s*[«\"'`]*series\b", re.IGNORECASE)
+# строка серии/выпуска: «НОВАЯ СЕРИЯ», «ВЫПУСК 18» — не название книги
+_SERIES_LINE_RE = re.compile(
+    r"^\s*[«\"'`]*((новая|старая)\s+)?(серия|series|выпуск|issue|том|volume|"
+    r"part|глава|chapter)\b",
+    re.IGNORECASE,
+)
+
+# слова-метки: не склеиваются с названием
+_LABEL_WORD_RE = re.compile(
+    r"\b(серия|серии|выпуск|выпуске|том|томе|issue|volume|vol\.|part|number|"
+    r"number|№|глава|chapter|издание|edition)\b",
+    re.IGNORECASE,
+)
 
 # колонтитулы печати из браузера: «1 of 4», «2 14 26, 7 47 PM»
 _PRINT_HEADER_RE = re.compile(
@@ -208,6 +222,11 @@ def is_service_line(text: str) -> bool:
     return bool(_SERVICE_LINE_RE.search(text))
 
 
+def is_label_line(text: str) -> bool:
+    """Строка-метка («НОВАЯ СЕРИЯ», «ВЫПУСК 18») — не часть названия."""
+    return bool(_LABEL_WORD_RE.search(text))
+
+
 # ---------------------------------------------------------------------------
 # Качество извлечённого текста (детект кракозябр)
 # ---------------------------------------------------------------------------
@@ -304,11 +323,13 @@ def clean_author(text: str) -> str:
     t = re.sub(r"\s*\(\s*z-?library\s*\)\s*$", "", t, flags=re.IGNORECASE)
     if not t or _JUNK_AUTHOR_RE.match(t):
         return ""
-    words = [w.strip(".,'’") for w in t.split()]
+    words = [w.strip(",'’") for w in t.split()]
     parts = [p for p in re.split(r"[\s.]+", t) if p]
-    if _SOFT_NOT_NAME_RE.match(words[0]) or any(
-        _STRONG_NOT_NAME_RE.match(p) for p in parts
-    ):
+    first = words[0].strip(",'’")
+    # инициал («О.») — не предлог: стоп-лист смотрит на полные слова
+    if not first.endswith(".") and _SOFT_NOT_NAME_RE.match(first.strip(".,'’")):
+        return ""
+    if any(_STRONG_NOT_NAME_RE.match(p) for p in parts):
         return ""
     if len(t) > 60 or len(t.split()) > 6 or sum(c.isdigit() for c in t) > 2:
         return ""

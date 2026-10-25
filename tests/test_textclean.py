@@ -25,9 +25,14 @@ class TestJunkTitle(unittest.TestCase):
                      '"Издательство Наука и Техника"', "МЦНМО",
                      "Beijing Boston Farnham Sebastopol Tokyo",
                      "New York London", "D N N O 2 TI", "Table of Contents",
-                     "1 of 4", "1 of 4 2:14:26, 7:47 PM",
-                     "Издательство «Манн»"):
+                     "1. ВВЕДЕНИЕ", "2.3 ОСНОВНЫЕ ПОНЯТИЯ", "1 of 4",
+                     "1 of 4 2:14:26, 7:47 PM", "Издательство «Манн»"):
             self.assertTrue(is_junk_title(junk), junk)
+
+    def test_numbered_real_title_kept(self):
+        for good in ("40 алгоритмов Python", "100 ошибок Go",
+                     "2. издание переработанное", "2001: A Space Odyssey"):
+            self.assertFalse(is_junk_title(good), good)
 
     def test_real_titles_kept(self):
         for good in ("Современная английская грамматика",
@@ -111,6 +116,11 @@ class TestCleanAuthor(unittest.TestCase):
     def test_caps_normalized(self):
         self.assertEqual(clean_author("АРТУР ДУМЧЕВ"), "Артур Думчев")
         self.assertEqual(clean_author("BLAKE CROUCH"), "Blake Crouch")
+
+    def test_initials_not_stopwords(self):
+        # «О.» — инициал, а не предлог «о»
+        self.assertEqual(clean_author("О. Б. ЛУПАНОВА"), "О. Б. Лупанова")
+        self.assertEqual(clean_author("В. В. Ситель"), "В. В. Ситель")
 
     def test_long_is_junk(self):
         self.assertEqual(clean_author("a" * 80), "")

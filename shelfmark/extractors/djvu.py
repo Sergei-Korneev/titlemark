@@ -1,11 +1,15 @@
-"""Экстрактор DJVU: аннотации ANTa (title/author) из IFF-структуры файла.
+"""Экстрактор DJVU: аннотации ANTa + текстовый слой через djvulibre.
 
-Текст DJVU без djvulibre не извлекаем — только метаданные из аннотаций.
+DjVu хранит текст в сжатых чанках TXTz (BZZ), извлечь их без djvulibre
+нельзя; если утилиты `djvutxt`/`ddjvu` установлены (пакет djvulibre),
+текст берётся из них, а для сканов работает OCR через ddjvu + tesseract.
 """
 
 from __future__ import annotations
 
 import re
+import shutil
+import subprocess
 from pathlib import Path
 
 from .base import Extractor
@@ -55,8 +59,32 @@ def find_annotations(data: bytes) -> dict[str, str]:
     return walk(data, start, len(data))
 
 
+def _run(cmd: list[str], timeout: int = 120) -> str:
+    try:
+        res = subprocess.run(cmd, capture_output=True, timeout=timeout, check=False)
+    except (subprocess.TimeoutExpired, OSError):
+        return ""
+    return res.stdout.decode("utf-8", errors="replace")
+
+
+def djvulibre_text(path: Path, max_pages: int = 3) -> str:
+    """Текст первых страниц через djvutxt (djvulibre); "" если утилиты нет.
+
+    Разделитель страниц — form feed (\f).
+    """
+    exe = shutil.which("djvutxt")
+    if not exe:
+        return ""
+    out = _run([exe, str(path)])
+    if not out.strip():
+        return ""
+    pages = out.split("\f")
+    return "\n".join(pages[:max_pages])
+
+
 class DjvuExtractor(Extractor):
     extensions = (".djvu",)
+    ocr_capable = True          # рендер страниц через ddjvu + tesseract
 
     def read_metadata(self, path: Path) -> tuple[str, str, str]:
         try:
@@ -68,4 +96,4 @@ class DjvuExtractor(Extractor):
         return found.get("title", ""), found.get("author", ""), ""
 
     def read_text(self, path: Path, max_pages: int = 3) -> str:
-        return ""
+        return djvulibre_text(path, max_pages=max_pages)

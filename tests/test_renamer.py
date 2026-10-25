@@ -58,6 +58,14 @@ class TestTitleFromFilename(unittest.TestCase):
         self.assertEqual(title, "Путеводитель по базам данных")
         self.assertEqual(author, "Владимир Комаров")
 
+    def test_author_not_duplicated_in_title(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = make_epub(Path(tmp) / "Valrog - Длинное название документа.epub",
+                             "Название", "Valrog", "2020-01-01")
+            plan = plan_rename(path, use_ocr=False)
+            self.assertEqual(plan.new_name,
+                             "Valrog - Длинное название документа [2020].epub")
+
     def test_edition_suffix_not_author(self):
         title, author = _title_from_filename(Path("Clean Code - Second Edition.epub"))
         self.assertEqual(title, "Clean Code - Second Edition")

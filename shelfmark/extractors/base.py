@@ -111,7 +111,10 @@ class Extractor(ABC):
 
         override=True — текст главнее метаданных (принудительный OCR).
         """
-        lines = [ln.rstrip() for ln in text.splitlines() if ln.strip()]
+        from ..titlefinder import join_fragment_lines
+
+        lines = join_fragment_lines(
+            [ln.rstrip() for ln in text.splitlines() if ln.strip()])
         if not lines:
             return
 
