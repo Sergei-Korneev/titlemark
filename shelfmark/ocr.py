@@ -1,27 +1,30 @@
 """OCR первых страниц: рендер страницы + tesseract.
 
 PDF рендерится через pdftoppm, DjVu — через ddjvu (djvulibre); для DjVu без
-ddjvu OCR недоступен (PIL такие страницы не открывает).
+ddjvu OCR недоступен (PIL такие страницы не открывает). Поиск утилит
+кроссплатформенный — см. shelfmark.tools.
 """
 
 from __future__ import annotations
 
-import shutil
 import subprocess
 import tempfile
 from functools import lru_cache
 from pathlib import Path
 
+from .tools import find_tool, tool_env
+
 
 @lru_cache(maxsize=1)
 def available() -> bool:
-    return bool(shutil.which("tesseract")
-                and (shutil.which("pdftoppm") or shutil.which("ddjvu")))
+    return bool(find_tool("tesseract")
+                and (find_tool("pdftoppm") or find_tool("ddjvu")))
 
 
 def _run(cmd: list[str], timeout: int) -> str:
     try:
-        res = subprocess.run(cmd, capture_output=True, timeout=timeout, check=False)
+        res = subprocess.run(cmd, capture_output=True, timeout=timeout,
+                             check=False, env=tool_env(cmd[0] if cmd else None))
     except (subprocess.TimeoutExpired, OSError):
         return ""
     return res.stdout.decode("utf-8", errors="replace")
@@ -37,14 +40,14 @@ def _is_djvu(path: Path) -> bool:
 def render_page(path: Path, page: int, out_dir: Path, dpi: int = 150) -> Path | None:
     """Отрендерить одну страницу документа; вернуть путь к картинке или None."""
     if _is_djvu(path):
-        exe = shutil.which("ddjvu")
+        exe = find_tool("ddjvu")
         if not exe:
             return None
         out = out_dir / f"p{page}.tif"
         _run([exe, f"-page={page}", "-format=tiff", str(path), str(out)], timeout=120)
         return out if out.exists() else None
 
-    exe = shutil.which("pdftoppm")
+    exe = find_tool("pdftoppm")
     if not exe:
         return None
     out_prefix = out_dir / f"p{page}"

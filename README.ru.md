@@ -43,7 +43,23 @@
 ```bash
 # Debian/Ubuntu
 sudo apt install poppler-utils tesseract-ocr tesseract-ocr-rus tesseract-ocr-eng djvulibre-bin
+
+# Fedora
+sudo dnf install poppler-utils tesseract tesseract-langpack-ru tesseract-langpack-en djvulibre
+
+# macOS
+brew install poppler tesseract djvulibre
+
+# Windows (winget) — либо добавьте папки bin в PATH вручную
+winget install poppler tesseract-ocr oschwartz10612.DjVuLibre
 ```
+
+Поиск утилит кроссплатформенный (Linux / macOS / Windows): каталог из
+`SHELFMARK_TOOLS` → `PATH` (учитываются `.exe`/`.bat`) → типичные места
+установки (Program Files\DjVuLibre, Homebrew, MacPorts, ~/.local/bin).
+Утилиты, распакованные вручную рядом со своими библиотеками, запускаются
+с автоматически подставленным путём к библиотекам. Если утилиты лежат в
+необычном месте — задайте `SHELFMARK_TOOLS=C:\tools\bin`.
 
 ## Установка и запуск
 

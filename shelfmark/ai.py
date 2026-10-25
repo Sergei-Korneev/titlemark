@@ -58,15 +58,19 @@ class AiConfig:
 
 def render_cover(path: Path, page: int = 1, dpi: int = 150) -> bytes | None:
     """Отрендерить страницу документа в PNG (pdftoppm) или None."""
-    if not shutil.which("pdftoppm"):
+    from .tools import find_tool, tool_env
+
+    exe = find_tool("pdftoppm")
+    if not exe:
         return None
     with tempfile.TemporaryDirectory(prefix="shelfmark_ai_") as tmp:
         out = Path(tmp) / "cover"
         try:
             subprocess.run(
-                ["pdftoppm", "-f", str(page), "-l", str(page), "-r", str(dpi),
+                [exe, "-f", str(page), "-l", str(page), "-r", str(dpi),
                  "-png", "-singlefile", str(path), str(out)],
                 capture_output=True, timeout=60, check=False,
+                env=tool_env(exe),
             )
         except (subprocess.TimeoutExpired, OSError):
             return None

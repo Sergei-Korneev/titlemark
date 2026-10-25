@@ -79,8 +79,11 @@ def detect_extension(path: Path) -> str:
         if head[offset:offset + len(magic)] == magic:
             return ext
 
-    # IFF-контейнер: DjVu («FORM» с типом DJVU/DJVM/…)
+    # IFF-контейнер: DjVu («FORM» с типом DJVU/DJVM/… — с магией AT&T
+    # или без неё)
     if head[4:8] == b"FORM" and head[12:16] in _DJVU_FORM_TYPES:
+        return ".djvu"
+    if head[0:4] == b"FORM" and head[8:12] in _DJVU_FORM_TYPES:
         return ".djvu"
 
     if head[:4] in _ZIP_MAGIC:

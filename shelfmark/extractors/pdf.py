@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 import re
-import shutil
-import subprocess
 from functools import lru_cache
 from pathlib import Path
 
+from ..tools import find_tool, run_tool
 from .base import Extractor
 
 _PDFINFO_RE = re.compile(r"^([^:]+):\s*(.*)$")
@@ -16,20 +15,16 @@ _PDFINFO_RE = re.compile(r"^([^:]+):\s*(.*)$")
 @lru_cache(maxsize=1)
 def _tools() -> dict[str, str | None]:
     return {
-        "pdfinfo": shutil.which("pdfinfo"),
-        "pdftotext": shutil.which("pdftotext"),
-        "pdftoppm": shutil.which("pdftoppm"),
+        "pdfinfo": find_tool("pdfinfo"),
+        "pdftotext": find_tool("pdftotext"),
+        "pdftoppm": find_tool("pdftoppm"),
     }
 
 
 def _run(cmd: list[str], timeout: int = 60) -> str:
-    try:
-        res = subprocess.run(
-            cmd, capture_output=True, timeout=timeout, check=False
-        )
-    except (subprocess.TimeoutExpired, OSError):
+    if not cmd or not cmd[0]:
         return ""
-    return res.stdout.decode("utf-8", errors="replace")
+    return run_tool(cmd[0], cmd[1:], timeout=timeout)
 
 
 def pdfinfo_fields(path: Path) -> dict[str, str]:

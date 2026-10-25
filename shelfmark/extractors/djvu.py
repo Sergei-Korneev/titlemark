@@ -8,10 +8,10 @@ DjVu хранит текст в сжатых чанках TXTz (BZZ), извле
 from __future__ import annotations
 
 import re
-import shutil
 import subprocess
 from pathlib import Path
 
+from ..tools import find_tool, tool_env
 from .base import Extractor
 
 _ANNOTATION_RES = [
@@ -61,7 +61,8 @@ def find_annotations(data: bytes) -> dict[str, str]:
 
 def _run(cmd: list[str], timeout: int = 120) -> str:
     try:
-        res = subprocess.run(cmd, capture_output=True, timeout=timeout, check=False)
+        res = subprocess.run(cmd, capture_output=True, timeout=timeout,
+                             check=False, env=tool_env(cmd[0] if cmd else None))
     except (subprocess.TimeoutExpired, OSError):
         return ""
     return res.stdout.decode("utf-8", errors="replace")
@@ -72,7 +73,7 @@ def djvulibre_text(path: Path, max_pages: int = 3) -> str:
 
     Разделитель страниц — form feed (\f).
     """
-    exe = shutil.which("djvutxt")
+    exe = find_tool("djvutxt")
     if not exe:
         return ""
     out = _run([exe, str(path)])

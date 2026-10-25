@@ -23,6 +23,19 @@ class TestDetectExtension(unittest.TestCase):
     def test_djvu(self):
         self.assertEqual(self._detect(make_djvu("Титул", "Автор")), ".djvu")
 
+    def test_djvu_form_without_att_magic(self):
+        # одинокая страница может начинаться сразу с «FORM» без «AT&T»
+        body = b"FORM\x00\x00\x00\x10DJVU" + b"\x00" * 8
+        self.assertEqual(self._detect(body), ".djvu")
+
+    def test_djvm_bundle_without_att_magic(self):
+        body = b"FORM\x00\x00\x00\x20DJVM" + b"\x00" * 24
+        self.assertEqual(self._detect(body), ".djvu")
+
+    def test_iff_other_type_not_djvu(self):
+        body = b"FORM\x00\x00\x00\x10ILBM" + b"\x00" * 8
+        self.assertEqual(self._detect(body), "")
+
     def test_mobi(self):
         self.assertEqual(self._detect(make_mobi()), ".mobi")
 
