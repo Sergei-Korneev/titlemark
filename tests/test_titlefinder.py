@@ -2,7 +2,7 @@
 
 import unittest
 
-from shelfmark.titlefinder import (
+from titlemark.titlefinder import (
     find_author,
     find_title,
     looks_like_author,

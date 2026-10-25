@@ -2,7 +2,7 @@
 
 PDF рендерится через pdftoppm, DjVu — через ddjvu (djvulibre); для DjVu без
 ddjvu OCR недоступен (PIL такие страницы не открывает). Поиск утилит
-кроссплатформенный — см. shelfmark.tools.
+кроссплатформенный — см. titlemark.tools.
 """
 
 from __future__ import annotations
@@ -67,7 +67,7 @@ def ocr_first_pages(path: Path, pages: int = 2, lang: str = "rus+eng",
         return ""
 
     texts: list[str] = []
-    with tempfile.TemporaryDirectory(prefix="shelfmark_ocr_") as tmp:
+    with tempfile.TemporaryDirectory(prefix="titlemark_ocr_") as tmp:
         tmpdir = Path(tmp)
         for page in range(1, pages + 1):
             img = render_page(path, page, tmpdir, dpi=dpi)

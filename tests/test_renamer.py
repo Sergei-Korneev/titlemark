@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from shelfmark.renamer import (
+from titlemark.renamer import (
     _fb_richer,
     _similar_title,
     _title_from_filename,

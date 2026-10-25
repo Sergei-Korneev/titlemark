@@ -5,9 +5,9 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from shelfmark.extractors.djvu import djvulibre_text, find_annotations
-from shelfmark.ocr import render_page
-from shelfmark.renamer import plan_rename
+from titlemark.extractors.djvu import djvulibre_text, find_annotations
+from titlemark.ocr import render_page
+from titlemark.renamer import plan_rename
 
 from test_extractors import make_djvu
 
@@ -15,8 +15,8 @@ from test_extractors import make_djvu
 class TestDjvuText(unittest.TestCase):
     def test_pages_split_and_truncated(self):
         pages = "первая страница\fвторая страница\fтретья страница"
-        with mock.patch("shelfmark.extractors.djvu._run", return_value=pages), \
-             mock.patch("shelfmark.extractors.djvu.find_tool",
+        with mock.patch("titlemark.extractors.djvu._run", return_value=pages), \
+             mock.patch("titlemark.extractors.djvu.find_tool",
                         return_value="/usr/bin/djvutxt"):
             text = djvulibre_text(Path("scan.djvu"), max_pages=2)
         self.assertIn("первая страница", text)
@@ -24,13 +24,13 @@ class TestDjvuText(unittest.TestCase):
         self.assertNotIn("третья", text)
 
     def test_no_djvulibre_tools(self):
-        with mock.patch("shelfmark.extractors.djvu.find_tool",
+        with mock.patch("titlemark.extractors.djvu.find_tool",
                         return_value=None):
             self.assertEqual(djvulibre_text(Path("scan.djvu")), "")
 
     def test_empty_output(self):
-        with mock.patch("shelfmark.extractors.djvu._run", return_value=""), \
-             mock.patch("shelfmark.extractors.djvu.find_tool",
+        with mock.patch("titlemark.extractors.djvu._run", return_value=""), \
+             mock.patch("titlemark.extractors.djvu.find_tool",
                         return_value="/usr/bin/djvutxt"):
             self.assertEqual(djvulibre_text(Path("scan.djvu")), "")
 
@@ -42,7 +42,7 @@ class TestDjvuPlan(unittest.TestCase):
             p = Path(tmp) / "013cf8222b4d0961ca03f0a5fcedc488"
             p.write_bytes(make_djvu("", ""))                  # аннотаций нет
             with mock.patch(
-                    "shelfmark.extractors.djvu.djvulibre_text",
+                    "titlemark.extractors.djvu.djvulibre_text",
                     return_value="Кибернетический сборник\nНОВАЯ СЕРИЯ\n"
                                  "ИЗДАТЕЛЬСТВО «МИР»\nМОСКВА 1981"):
                 plan = plan_rename(p, use_ocr=False)
@@ -61,9 +61,9 @@ class TestOcrRendering(unittest.TestCase):
             return ""
 
         with tempfile.TemporaryDirectory() as tmp:
-            with mock.patch("shelfmark.ocr.find_tool",
+            with mock.patch("titlemark.ocr.find_tool",
                             return_value="/usr/bin/ddjvu"), \
-                 mock.patch("shelfmark.ocr._run", side_effect=fake_run):
+                 mock.patch("titlemark.ocr._run", side_effect=fake_run):
                 img = render_page(Path("scan.djvu"), 1, Path(tmp))
         self.assertIsNotNone(img)
         self.assertTrue(calls[0][0].endswith("ddjvu"))
@@ -79,9 +79,9 @@ class TestOcrRendering(unittest.TestCase):
             return ""
 
         with tempfile.TemporaryDirectory() as tmp:
-            with mock.patch("shelfmark.ocr.find_tool",
+            with mock.patch("titlemark.ocr.find_tool",
                             return_value="/usr/bin/pdftoppm"), \
-                 mock.patch("shelfmark.ocr._run", side_effect=fake_run):
+                 mock.patch("titlemark.ocr._run", side_effect=fake_run):
                 img = render_page(Path("book.pdf"), 1, Path(tmp))
         self.assertIsNotNone(img)
         self.assertTrue(calls[0][0].endswith("pdftoppm"))

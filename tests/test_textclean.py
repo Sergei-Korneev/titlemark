@@ -2,7 +2,7 @@
 
 import unittest
 
-from shelfmark.textclean import (
+from titlemark.textclean import (
     TextQuality,
     clean_author,
     clean_title,

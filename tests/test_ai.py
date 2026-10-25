@@ -7,14 +7,14 @@ import urllib.error
 from pathlib import Path
 from unittest import mock
 
-from shelfmark.ai import (
+from titlemark.ai import (
     AiConfig,
     build_prompt,
     enrich_with_ai,
     parse_json_answer,
 )
-from shelfmark.models import DocumentInfo, Source
-from shelfmark.renamer import plan_rename
+from titlemark.models import DocumentInfo, Source
+from titlemark.renamer import plan_rename
 
 AI_ANSWER = {"title": "A History of Modern Computing",
              "author": "Paul E. Ceruzzi", "year": "2004"}
@@ -51,8 +51,8 @@ class TestEnrichWithAi(unittest.TestCase):
         self.info = DocumentInfo(path=self.path, title="Черновик черновика")
 
     def test_ai_overrides_heuristics(self):
-        with mock.patch("shelfmark.ai._request", side_effect=_fake_response), \
-             mock.patch("shelfmark.ai.render_cover", return_value=b"png-bytes"):
+        with mock.patch("titlemark.ai._request", side_effect=_fake_response), \
+             mock.patch("titlemark.ai.render_cover", return_value=b"png-bytes"):
             ok = enrich_with_ai(self.path, self.info, AiConfig(api_key="k"))
         self.assertTrue(ok)
         self.assertEqual(self.info.title, "A History of Modern Computing")
@@ -67,8 +67,8 @@ class TestEnrichWithAi(unittest.TestCase):
             captured.update(payload)
             return _fake_response(config, payload)
 
-        with mock.patch("shelfmark.ai._request", side_effect=fake_request), \
-             mock.patch("shelfmark.ai.render_cover", return_value=b"png-bytes"):
+        with mock.patch("titlemark.ai._request", side_effect=fake_request), \
+             mock.patch("titlemark.ai.render_cover", return_value=b"png-bytes"):
             enrich_with_ai(self.path, self.info, AiConfig(api_key="k"))
         content = captured["messages"][1]["content"]
         self.assertIsInstance(content, list)
@@ -82,15 +82,15 @@ class TestEnrichWithAi(unittest.TestCase):
             captured.update(payload)
             return _fake_response(config, payload)
 
-        with mock.patch("shelfmark.ai._request", side_effect=fake_request), \
-             mock.patch("shelfmark.ai.render_cover", return_value=None):
+        with mock.patch("titlemark.ai._request", side_effect=fake_request), \
+             mock.patch("titlemark.ai.render_cover", return_value=None):
             enrich_with_ai(self.path, self.info, AiConfig(api_key="k"))
         self.assertIsInstance(captured["messages"][1]["content"], str)
         self.assertTrue(any("cover" in w for w in self.info.warnings))
 
     def test_network_error_keeps_heuristics(self):
-        with mock.patch("shelfmark.ai.render_cover", return_value=b"png"), \
-             mock.patch("shelfmark.ai._request",
+        with mock.patch("titlemark.ai.render_cover", return_value=b"png"), \
+             mock.patch("titlemark.ai._request",
                         side_effect=urllib.error.URLError("нет сети")):
             ok = enrich_with_ai(self.path, self.info, AiConfig(api_key="k"))
         self.assertFalse(ok)
@@ -109,8 +109,8 @@ class TestPlanWithAi(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             p = Path(tmp) / "00acaf02b9dfa6495f4842bd5de2a675"
             p.write_bytes(b"%PDF-1.4 stub")
-            with mock.patch("shelfmark.ai._request", side_effect=_fake_response), \
-                 mock.patch("shelfmark.ai.render_cover", return_value=b"png"):
+            with mock.patch("titlemark.ai._request", side_effect=_fake_response), \
+                 mock.patch("titlemark.ai.render_cover", return_value=b"png"):
                 plan = plan_rename(p, use_ocr=False, ai=AiConfig(api_key="k"))
             self.assertEqual(plan.status, "ok")
             self.assertEqual(
@@ -120,14 +120,14 @@ class TestPlanWithAi(unittest.TestCase):
 
 class TestCliAi(unittest.TestCase):
     def test_cloud_requires_key(self):
-        from shelfmark.cli import main
+        from titlemark.cli import main
 
         with tempfile.NamedTemporaryFile(suffix=".pdf") as fh:
             code = main(["--ai", fh.name])
         self.assertEqual(code, 2)
 
     def test_local_needs_no_key(self):
-        from shelfmark.cli import main
+        from titlemark.cli import main
 
         with tempfile.NamedTemporaryFile(suffix=".pdf") as fh:
             code = main(["--ai", "--ai-url", "http://localhost:11434/v1",

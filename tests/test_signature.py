@@ -4,8 +4,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from shelfmark.renamer import iter_document_files, plan_rename
-from shelfmark.signature import detect_extension
+from titlemark.renamer import iter_document_files, plan_rename
+from titlemark.signature import detect_extension
 
 from test_extractors import make_djvu, make_docx, make_epub, make_fb2, make_mobi
 

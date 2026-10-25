@@ -1,9 +1,9 @@
-# Shelfmark
+# Titlemark
 
-> *shelfmark (n.)* — the call number a librarian writes on a book to give it
-> its place on the shelf.
+> *titlemark (n.)* — in early printing, the short title set at the head of a
+> page to mark the book it came from.
 
-**Shelfmark** is a console tool that reads a document, works out its *title*
+**Titlemark** is a console tool that reads a document, works out its *title*
 and *author*, and renames the file into something a human would recognise:
 
 ```
@@ -48,12 +48,12 @@ sudo apt install poppler-utils tesseract-ocr tesseract-ocr-rus tesseract-ocr-eng
 
 ```bash
 # 1. straight from the source tree, no installation
-cd shelfmark
-python3 -m shelfmark --help
+cd titlemark
+python3 -m titlemark --help
 
-# 2. user install — the `shelfmark` command works from anywhere
+# 2. user install — the `titlemark` command works from anywhere
 pip install --user .
-shelfmark --help
+titlemark --help
 
 # 3. editable install for development (source edits apply immediately)
 pip install --user -e .
@@ -67,16 +67,16 @@ changes without reinstalling.
 ## Usage
 
 ```bash
-shelfmark book.pdf                   # show the plan (files are NOT touched)
-shelfmark --apply book.pdf           # rename the file
-shelfmark -r ~/Downloads             # plan for a whole folder, recursively
-shelfmark --apply -r ~/Downloads     # rename everything in the folder
-shelfmark --report plan.csv -r .     # save the plan as CSV
-shelfmark --force-ocr book.pdf       # re-check a PDF whose text layer is broken
-shelfmark --ai book.pdf              # let a vision LLM read the cover
-shelfmark --title-from-text book.pdf # title = whole page text, fragments joined
-shelfmark -n "{title}-{year}" book.pdf # custom name pattern
-shelfmark -v book.pdf                # debug: title candidates, text snippet
+titlemark book.pdf                   # show the plan (files are NOT touched)
+titlemark --apply book.pdf           # rename the file
+titlemark -r ~/Downloads             # plan for a whole folder, recursively
+titlemark --apply -r ~/Downloads     # rename everything in the folder
+titlemark --report plan.csv -r .     # save the plan as CSV
+titlemark --force-ocr book.pdf       # re-check a PDF whose text layer is broken
+titlemark --ai book.pdf              # let a vision LLM read the cover
+titlemark --title-from-text book.pdf # title = whole page text, fragments joined
+titlemark -n "{title}-{year}" book.pdf # custom name pattern
+titlemark -v book.pdf                # debug: title candidates, text snippet
 ```
 
 ### Options
@@ -104,23 +104,23 @@ shelfmark -v book.pdf                # debug: title candidates, text snippet
 | `--ai` | ask a vision LLM to read the cover; its answer outranks the heuristics |
 | `--ai-url URL` | OpenAI-compatible endpoint (default `https://api.openai.com/v1`; Ollama: `http://localhost:11434/v1`) |
 | `--ai-model MODEL` | model name (default `gpt-4o-mini`; Ollama: `moondream`, `llava`, `llama3.2-vision`) |
-| `--ai-key KEY` | API key (or env `SHELFMARK_AI_KEY`; not needed for local Ollama) |
+| `--ai-key KEY` | API key (or env `TITLEMARK_AI_KEY`; not needed for local Ollama) |
 | `--ai-timeout SEC` | request timeout (default 60) |
 
-Environment variables: `SHELFMARK_AI_URL`, `SHELFMARK_AI_MODEL`, `SHELFMARK_AI_KEY`.
+Environment variables: `TITLEMARK_AI_URL`, `TITLEMARK_AI_MODEL`, `TITLEMARK_AI_KEY`.
 
-The AI is used **only when `--ai` is passed**. Shelfmark renders the first page
+The AI is used **only when `--ai` is passed**. Titlemark renders the first page
 to PNG, shows it to the model together with the heuristic candidates, and gets
 back strict JSON `{"title", "author", "year"}`. If the model is unreachable or
 answers oddly, the heuristic result is kept and a warning is printed.
 
 ```bash
 # cloud (OpenAI, DeepSeek, GigaChat, YandexGPT, … — any compatible API)
-export SHELFMARK_AI_KEY=sk-...
-shelfmark --ai book.pdf
+export TITLEMARK_AI_KEY=sk-...
+titlemark --ai book.pdf
 
 # local Ollama, fully offline
-shelfmark --ai --ai-url http://localhost:11434/v1 --ai-model moondream book.pdf
+titlemark --ai --ai-url http://localhost:11434/v1 --ai-model moondream book.pdf
 ```
 
 ## How the name is chosen
@@ -152,7 +152,7 @@ Sources are tried from most to least reliable:
 Telling a short author name from a short title (both may be set in caps:
 `АРТУР ДУМЧЕВ` vs `DARK MATTER`) is done with a compact dictionary of common
 Russian/English first names and their transliterations
-(`shelfmark/names.py`) — easy to extend.
+(`titlemark/names.py`) — easy to extend.
 
 Name lines in the forms «Surname F. M.», «F. M. Surname», «Surname, Name»
 and «by Jane Smith» are recognised by pattern. ALL-CAPS names are normalised
@@ -183,8 +183,8 @@ format, and rename scenarios.
 ## Project layout
 
 ```
-shelfmark/
-├── shelfmark/
+titlemark/
+├── titlemark/
 │   ├── cli.py               # command line, plan output
 │   ├── renamer.py           # rename planning and execution
 │   ├── titlefinder.py       # heuristics: title and author from text
@@ -204,4 +204,4 @@ shelfmark/
 
 ## Author
 
-**Sergei Korneev (AI coded)** — version 1.1.0 (`shelfmark --version`).
+**Sergei Korneev (AI coded)** — version 1.1.0 (`titlemark --version`).

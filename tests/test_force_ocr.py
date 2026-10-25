@@ -5,9 +5,9 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from shelfmark.extractors.base import Extractor
-from shelfmark.models import Source
-from shelfmark.renamer import plan_rename
+from titlemark.extractors.base import Extractor
+from titlemark.models import Source
+from titlemark.renamer import plan_rename
 
 
 class _StubExtractor(Extractor):
@@ -34,21 +34,21 @@ class TestForceOcr(unittest.TestCase):
         self.path.write_bytes(b"stub")
 
     def test_force_ocr_uses_ocr_text(self):
-        with mock.patch("shelfmark.ocr.ocr_first_pages", return_value=OCR_TEXT) as m:
+        with mock.patch("titlemark.ocr.ocr_first_pages", return_value=OCR_TEXT) as m:
             info = _StubExtractor().extract(self.path, use_ocr=True, force_ocr=True)
         self.assertTrue(m.called)
         self.assertIs(info.title_source, Source.OCR)
         self.assertIn("ПРАВИЛЬНОЕ НАЗВАНИЕ ИЗ OCR", info.title)
 
     def test_without_force_text_layer_wins(self):
-        with mock.patch("shelfmark.ocr.ocr_first_pages", return_value=OCR_TEXT) as m:
+        with mock.patch("titlemark.ocr.ocr_first_pages", return_value=OCR_TEXT) as m:
             info = _StubExtractor().extract(self.path, use_ocr=True, force_ocr=False)
         self.assertFalse(m.called)               # текст хороший — OCR не нужен
         self.assertIs(info.title_source, Source.TEXT)
         self.assertEqual(info.title, "Современная английская грамматика")
 
     def test_force_ocr_empty_result_falls_back(self):
-        with mock.patch("shelfmark.ocr.ocr_first_pages", return_value="   "):
+        with mock.patch("titlemark.ocr.ocr_first_pages", return_value="   "):
             info = _StubExtractor().extract(self.path, use_ocr=True, force_ocr=True)
         self.assertIs(info.title_source, Source.TEXT)
         self.assertTrue(any("OCR produced no text" in w for w in info.warnings))
@@ -58,7 +58,7 @@ class TestForceOcr(unittest.TestCase):
             def read_metadata(self, path: Path) -> tuple[str, str, str]:
                 return "Черновик черновика", "", ""
 
-        with mock.patch("shelfmark.ocr.ocr_first_pages", return_value=OCR_TEXT):
+        with mock.patch("titlemark.ocr.ocr_first_pages", return_value=OCR_TEXT):
             info = MetaStub().extract(self.path, use_ocr=True, force_ocr=True)
         self.assertIs(info.title_source, Source.OCR)
 
@@ -66,7 +66,7 @@ class TestForceOcr(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             p = Path(tmp) / "00acaf02b9dfa6495f4842bd5de2a675"
             p.write_bytes(b"%PDF-1.4 stub")
-            with mock.patch("shelfmark.ocr.ocr_first_pages", return_value=OCR_TEXT):
+            with mock.patch("titlemark.ocr.ocr_first_pages", return_value=OCR_TEXT):
                 plan = plan_rename(p, use_ocr=True, force_ocr=True)
             self.assertEqual(plan.status, "ok")
             self.assertTrue(plan.new_name.endswith(".pdf"))

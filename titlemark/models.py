@@ -1,4 +1,4 @@
-"""Модели данных проекта shelfmark."""
+"""Модели данных проекта titlemark."""
 
 from __future__ import annotations
 

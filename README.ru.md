@@ -1,9 +1,9 @@
-# Shelfmark
+# Titlemark
 
-> *shelfmark (сущ.)* — библиотечный шифр: пометка, которую библиотекарь
-> записывает на книге, чтобы дать ей место на полке.
+> *titlemark* — титульная метка: короткое название, которое в старопечатных
+> книгах ставили в верху страницы, чтобы опознать книгу.
 
-**Shelfmark** — консольная утилита, которая читает документ, определяет его
+**Titlemark** — консольная утилита, которая читает документ, определяет его
 **заголовок и автора** и переименовывает файл в понятное имя:
 
 ```
@@ -55,22 +55,22 @@ winget install poppler tesseract-ocr oschwartz10612.DjVuLibre
 ```
 
 Поиск утилит кроссплатформенный (Linux / macOS / Windows): каталог из
-`SHELFMARK_TOOLS` → `PATH` (учитываются `.exe`/`.bat`) → типичные места
+`TITLEMARK_TOOLS` → `PATH` (учитываются `.exe`/`.bat`) → типичные места
 установки (Program Files\DjVuLibre, Homebrew, MacPorts, ~/.local/bin).
 Утилиты, распакованные вручную рядом со своими библиотеками, запускаются
 с автоматически подставленным путём к библиотекам. Если утилиты лежат в
-необычном месте — задайте `SHELFMARK_TOOLS=C:\tools\bin`.
+необычном месте — задайте `TITLEMARK_TOOLS=C:\tools\bin`.
 
 ## Установка и запуск
 
 ```bash
 # 1. прямо из исходников, без установки
-cd shelfmark
-python3 -m shelfmark --help
+cd titlemark
+python3 -m titlemark --help
 
-# 2. пользовательская установка — команда shelfmark работает отовсюду
+# 2. пользовательская установка — команда titlemark работает отовсюду
 pip install --user .
-shelfmark --help
+titlemark --help
 
 # 3. развёрнутая установка для разработки (правки исходников подхватываются сразу)
 pip install --user -e .
@@ -84,16 +84,16 @@ pip install --user -e .
 ## Использование
 
 ```bash
-shelfmark книга.pdf                  # показать план (файл НЕ меняется)
-shelfmark --apply книга.pdf          # переименовать файл
-shelfmark -r ~/Загрузки              # план по всей папке рекурсивно
-shelfmark --apply -r ~/Загрузки      # переименовать всё в папке
-shelfmark --report plan.csv -r .     # сохранить план в CSV
-shelfmark --force-ocr книга.pdf      # перепроверить PDF с кривым текстовым слоем
-shelfmark --ai книга.pdf             # пусть ИИ прочитает обложку
-shelfmark --title-from-text книга.pdf # название = весь текст страницы целиком
-shelfmark -n "{title}-{year}" книга.pdf # свой шаблон имени
-shelfmark -v книга.pdf               # отладка: кандидаты в заголовки, фрагмент текста
+titlemark книга.pdf                  # показать план (файл НЕ меняется)
+titlemark --apply книга.pdf          # переименовать файл
+titlemark -r ~/Загрузки              # план по всей папке рекурсивно
+titlemark --apply -r ~/Загрузки      # переименовать всё в папке
+titlemark --report plan.csv -r .     # сохранить план в CSV
+titlemark --force-ocr книга.pdf      # перепроверить PDF с кривым текстовым слоем
+titlemark --ai книга.pdf             # пусть ИИ прочитает обложку
+titlemark --title-from-text книга.pdf # название = весь текст страницы целиком
+titlemark -n "{title}-{year}" книга.pdf # свой шаблон имени
+titlemark -v книга.pdf               # отладка: кандидаты в заголовки, фрагмент текста
 ```
 
 ### Параметры
@@ -121,23 +121,23 @@ shelfmark -v книга.pdf               # отладка: кандидаты �
 | `--ai` | спросить ИИ по обложке документа; его ответ главнее эвристик |
 | `--ai-url URL` | OpenAI-совместимый эндпоинт (по умолчанию `https://api.openai.com/v1`; Ollama: `http://localhost:11434/v1`) |
 | `--ai-model MODEL` | модель (по умолчанию `gpt-4o-mini`; Ollama: `moondream`, `llava`, `llama3.2-vision`) |
-| `--ai-key KEY` | ключ API (или env `SHELFMARK_AI_KEY`; локальному Ollama не нужен) |
+| `--ai-key KEY` | ключ API (или env `TITLEMARK_AI_KEY`; локальному Ollama не нужен) |
 | `--ai-timeout SEC` | таймаут запроса (по умолчанию 60) |
 
-Переменные окружения: `SHELFMARK_AI_URL`, `SHELFMARK_AI_MODEL`, `SHELFMARK_AI_KEY`.
+Переменные окружения: `TITLEMARK_AI_URL`, `TITLEMARK_AI_MODEL`, `TITLEMARK_AI_KEY`.
 
-ИИ используется **только при флаге `--ai`**. Shelfmark рендерит первую страницу
+ИИ используется **только при флаге `--ai`**. Titlemark рендерит первую страницу
 в PNG, показывает её модели вместе с кандидатами эвристик и получает строгий
 JSON `{"title", "author", "year"}`. Если модель недоступна или ответила
 странно — остаётся результат эвристик и печатается предупреждение.
 
 ```bash
 # облако (OpenAI, DeepSeek, GigaChat, YandexGPT и любой совместимый API)
-export SHELFMARK_AI_KEY=sk-...
-shelfmark --ai книга.pdf
+export TITLEMARK_AI_KEY=sk-...
+titlemark --ai книга.pdf
 
 # локальный Ollama, полностью офлайн
-shelfmark --ai --ai-url http://localhost:11434/v1 --ai-model moondream книга.pdf
+titlemark --ai --ai-url http://localhost:11434/v1 --ai-model moondream книга.pdf
 ```
 
 ## Как выбирается имя
@@ -170,7 +170,7 @@ shelfmark --ai --ai-url http://localhost:11434/v1 --ai-model moondream книг�
 Разделение «имя автора» / «короткий заголовок» (оба могут быть набраны
 ЗАГЛАВНЫМИ: `АРТУР ДУМЧЕВ` против `DARK MATTER`) делается по компактному
 словарю распространённых русских, английских имён и их транслитераций
-(`shelfmark/names.py`) — словарь легко дополнять.
+(`titlemark/names.py`) — словарь легко дополнять.
 
 Строки с именами в формате «Фамилия И. О.», «И. О. Фамилия»,
 «Фамилия, Имя», «by Jane Smith» распознаются шаблонами. Имя в капсе
@@ -199,8 +199,8 @@ python3 -m unittest discover -s tests
 ## Структура проекта
 
 ```
-shelfmark/
-├── shelfmark/
+titlemark/
+├── titlemark/
 │   ├── cli.py               # аргументы командной строки, вывод плана
 │   ├── renamer.py           # планирование и выполнение переименования
 │   ├── titlefinder.py       # эвристики: заголовок и автор из текста
@@ -220,4 +220,4 @@ shelfmark/
 
 ## Автор
 
-**Sergei Korneev (AI coded)** — версия 1.1.0 (`shelfmark --version`).
+**Sergei Korneev (AI coded)** — версия 1.1.0 (`titlemark --version`).

@@ -3,7 +3,7 @@
 Пакет целиком работает на Python-стандартной библиотеке; внешние утилиты
 необязательны и ищутся одинаково на Linux, macOS и Windows:
 
-1. каталог из переменной окружения SHELFMARK_TOOLS;
+1. каталог из переменной окружения TITLEMARK_TOOLS;
 2. PATH системы (на Windows учитываются .exe/.bat);
 3. типичные места установки (Program Files/DjVuLibre, Homebrew, MacPorts,
    ~/.local/bin и др.).
@@ -21,7 +21,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-ENV_TOOLS_DIR = "SHELFMARK_TOOLS"
+ENV_TOOLS_DIR = "TITLEMARK_TOOLS"
 
 
 def _candidate_dirs() -> list[Path]:

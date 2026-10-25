@@ -63,7 +63,7 @@ def render_cover(path: Path, page: int = 1, dpi: int = 150) -> bytes | None:
     exe = find_tool("pdftoppm")
     if not exe:
         return None
-    with tempfile.TemporaryDirectory(prefix="shelfmark_ai_") as tmp:
+    with tempfile.TemporaryDirectory(prefix="titlemark_ai_") as tmp:
         out = Path(tmp) / "cover"
         try:
             subprocess.run(

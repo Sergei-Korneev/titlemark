@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from shelfmark.naming import (
+from titlemark.naming import (
     build_new_name,
     extract_year_from_name,
     sanitize_component,

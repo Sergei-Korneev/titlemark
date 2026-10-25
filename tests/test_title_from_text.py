@@ -5,11 +5,11 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from shelfmark.extractors.base import Extractor
-from shelfmark.models import Source
-from shelfmark.renamer import plan_rename
-from shelfmark.textclean import strip_special
-from shelfmark.titlefinder import full_text_title
+from titlemark.extractors.base import Extractor
+from titlemark.models import Source
+from titlemark.renamer import plan_rename
+from titlemark.textclean import strip_special
+from titlemark.titlefinder import full_text_title
 
 PAGE_TEXT = """
                         АРТУР ДУМЧЕВ
@@ -94,7 +94,7 @@ class TestPlanRenamePlumbing(unittest.TestCase):
             p = Path(tmp) / "00acaf02b9dfa6495f4842bd5de2a675"
             p.write_bytes(b"%PDF-1.4 stub")
             with mock.patch(
-                    "shelfmark.extractors.pdf.PdfExtractor.read_text",
+                    "titlemark.extractors.pdf.PdfExtractor.read_text",
                     return_value=PAGE_TEXT):
                 plan = plan_rename(p, use_ocr=False, title_from_text=1)
             self.assertEqual(plan.status, "ok")
@@ -102,7 +102,7 @@ class TestPlanRenamePlumbing(unittest.TestCase):
             self.assertTrue(plan.new_name.endswith(".pdf"))
 
     def test_cli_parses_flag_and_path(self):
-        from shelfmark.cli import build_parser
+        from titlemark.cli import build_parser
 
         args = build_parser().parse_args(
             ["--title-from-text", "--title-pages", "2", "книга.pdf"])
@@ -111,14 +111,14 @@ class TestPlanRenamePlumbing(unittest.TestCase):
         self.assertEqual([str(p) for p in args.paths], ["книга.pdf"])
 
     def test_cli_version(self):
-        from shelfmark.cli import build_parser
+        from titlemark.cli import build_parser
 
         with self.assertRaises(SystemExit) as ctx:
             build_parser().parse_args(["--version"])
         self.assertEqual(ctx.exception.code, 0)
 
     def test_cli_rejects_bad_template(self):
-        from shelfmark.cli import main
+        from titlemark.cli import main
 
         code = main(["--naming-template", "{title}-{год}", "книга.pdf"])
         self.assertEqual(code, 2)

@@ -6,11 +6,11 @@ import unittest
 import zipfile
 from pathlib import Path
 
-from shelfmark.extractors.djvu import find_annotations
-from shelfmark.extractors.mobi import parse_mobi
-from shelfmark.extractors import get_extractor
-from shelfmark.models import Source
-from shelfmark.renamer import apply_plans, plan_rename
+from titlemark.extractors.djvu import find_annotations
+from titlemark.extractors.mobi import parse_mobi
+from titlemark.extractors import get_extractor
+from titlemark.models import Source
+from titlemark.renamer import apply_plans, plan_rename
 
 # ---------------------------------------------------------------------------
 # строители синтетических файлов

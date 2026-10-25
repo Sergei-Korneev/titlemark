@@ -1,4 +1,4 @@
-"""Command line interface for shelfmark."""
+"""Command line interface for titlemark."""
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ _STATUS_MARK = {
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="shelfmark",
+        prog="titlemark",
         description=(
             "Reads a document, detects its title and author, and renames the "
             "file into something a human would recognise "
@@ -35,16 +35,16 @@ def build_parser() -> argparse.ArgumentParser:
         ),
         epilog=(
             "Examples:\n"
-            "  shelfmark book.pdf                   # what would the file become\n"
-            "  shelfmark --apply book.pdf           # rename it\n"
-            "  shelfmark --apply -r ~/Downloads     # whole folder, recursively\n"
-            "  shelfmark --report plan.csv -r .     # save the plan as CSV\n"
-            "  shelfmark --title-from-text book.pdf # title = whole page text\n"
-            "  shelfmark --ai book.pdf              # vision LLM reads the cover\n"
-            '  shelfmark --naming-template "{title}-{year}" book.pdf\n'
+            "  titlemark book.pdf                   # what would the file become\n"
+            "  titlemark --apply book.pdf           # rename it\n"
+            "  titlemark --apply -r ~/Downloads     # whole folder, recursively\n"
+            "  titlemark --report plan.csv -r .     # save the plan as CSV\n"
+            "  titlemark --title-from-text book.pdf # title = whole page text\n"
+            "  titlemark --ai book.pdf              # vision LLM reads the cover\n"
+            '  titlemark --naming-template "{title}-{year}" book.pdf\n'
             "\n"
             f"Author:  {__author__}\n"
-            f"Version: {__version__} (see also: shelfmark --version)"
+            f"Version: {__version__} (see also: titlemark --version)"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -80,18 +80,18 @@ def build_parser() -> argparse.ArgumentParser:
                                "its answer outranks the heuristics "
                                "(OpenAI-compatible API: cloud or local Ollama)")
     ai_group.add_argument("--ai-url", metavar="URL",
-                          default=os.environ.get("SHELFMARK_AI_URL", DEFAULT_AI_URL),
+                          default=os.environ.get("TITLEMARK_AI_URL", DEFAULT_AI_URL),
                           help=f"API endpoint (default: {DEFAULT_AI_URL}; "
                                "for Ollama: http://localhost:11434/v1; "
-                               "env SHELFMARK_AI_URL)")
+                               "env TITLEMARK_AI_URL)")
     ai_group.add_argument("--ai-model", metavar="MODEL",
-                          default=os.environ.get("SHELFMARK_AI_MODEL", DEFAULT_AI_MODEL),
+                          default=os.environ.get("TITLEMARK_AI_MODEL", DEFAULT_AI_MODEL),
                           help=f"model name (default: {DEFAULT_AI_MODEL}; "
                                "for Ollama: moondream, llava; "
-                               "env SHELFMARK_AI_MODEL)")
+                               "env TITLEMARK_AI_MODEL)")
     ai_group.add_argument("--ai-key", metavar="KEY",
-                          default=os.environ.get("SHELFMARK_AI_KEY", ""),
-                          help="API key (env SHELFMARK_AI_KEY); "
+                          default=os.environ.get("TITLEMARK_AI_KEY", ""),
+                          help="API key (env TITLEMARK_AI_KEY); "
                                "not needed for local Ollama")
     ai_group.add_argument("--ai-timeout", type=int, default=60, metavar="SEC",
                           help="AI request timeout in seconds (default: 60)")
@@ -178,7 +178,7 @@ def main(argv: list[str] | None = None) -> int:
 
         if not args.ai_key and not ("localhost" in args.ai_url
                                     or "127.0.0.1" in args.ai_url):
-            print("a cloud API key is required: --ai-key or SHELFMARK_AI_KEY "
+            print("a cloud API key is required: --ai-key or TITLEMARK_AI_KEY "
                   "(local Ollama needs no key)", file=sys.stderr)
             return 2
         ai_config = AiConfig(url=args.ai_url, model=args.ai_model,

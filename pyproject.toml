@@ -3,16 +3,36 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "shelfmark"
-version = "1.1.0"
-description = "Shelfmark — give every document its true name: \"Author - Title [year]\""
+name = "titlemark"
+version = "1.2.0"
+description = "Titlemark — give every document its true name: \"Author - Title [year]\""
+readme = "README.md"
 authors = [{ name = "Sergei Korneev (AI coded)" }]
 requires-python = ">=3.10"
 license = { text = "MIT" }
-dependencies = []          # standard library + system tools only
+keywords = [
+    "rename", "filename", "title", "author", "metadata", "ocr",
+    "pdf", "epub", "fb2", "mobi", "djvu", "docx", "cli",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: File Management",
+    "Topic :: Utilities",
+]
+dependencies = []          # standard library + external tools only
 
 [project.scripts]
-shelfmark = "shelfmark.cli:main"
+titlemark = "titlemark.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["shelfmark*"]
+include = ["titlemark*"]

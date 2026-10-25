@@ -1,4 +1,4 @@
-"""Тесты кроссплатформенного поиска внешних утилит (shelfmark.tools)."""
+"""Тесты кроссплатформенного поиска внешних утилит (titlemark.tools)."""
 
 import os
 import subprocess
@@ -7,12 +7,12 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from shelfmark.tools import ENV_TOOLS_DIR, find_tool, run_tool, tool_env
+from titlemark.tools import ENV_TOOLS_DIR, find_tool, run_tool, tool_env
 
 
 class TestFindTool(unittest.TestCase):
     def test_found_on_path(self):
-        with mock.patch("shelfmark.tools.shutil.which",
+        with mock.patch("titlemark.tools.shutil.which",
                         return_value="/usr/bin/tesseract"):
             self.assertEqual(find_tool("tesseract"), "/usr/bin/tesseract")
 
@@ -20,7 +20,7 @@ class TestFindTool(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             tool = Path(tmp) / "djvutxt"
             tool.write_bytes(b"#!/bin/sh\n")
-            with mock.patch("shelfmark.tools.shutil.which", return_value=None), \
+            with mock.patch("titlemark.tools.shutil.which", return_value=None), \
                  mock.patch.dict(os.environ, {ENV_TOOLS_DIR: tmp}):
                 self.assertEqual(find_tool("djvutxt"), str(tool))
 
@@ -28,12 +28,12 @@ class TestFindTool(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             tool = Path(tmp) / "ddjvu.exe"
             tool.write_bytes(b"MZ")
-            with mock.patch("shelfmark.tools.shutil.which", return_value=None), \
+            with mock.patch("titlemark.tools.shutil.which", return_value=None), \
                  mock.patch.dict(os.environ, {ENV_TOOLS_DIR: tmp}):
                 self.assertEqual(find_tool("ddjvu"), str(tool))
 
     def test_not_found(self):
-        with mock.patch("shelfmark.tools.shutil.which", return_value=None), \
+        with mock.patch("titlemark.tools.shutil.which", return_value=None), \
              mock.patch.dict(os.environ, {}, clear=False):
             os.environ.pop(ENV_TOOLS_DIR, None)
             self.assertIsNone(find_tool("definitely-missing-tool"))
@@ -63,16 +63,16 @@ class TestRunTool(unittest.TestCase):
     def test_stdout_returned(self):
         fake = mock.Mock(return_value=mock.Mock(stdout=b"hello",
                                                 returncode=0))
-        with mock.patch("shelfmark.tools.subprocess.run", fake):
+        with mock.patch("titlemark.tools.subprocess.run", fake):
             self.assertEqual(run_tool("/usr/bin/tool", ["arg"]), "hello")
 
     def test_error_returns_empty(self):
-        with mock.patch("shelfmark.tools.subprocess.run",
+        with mock.patch("titlemark.tools.subprocess.run",
                         side_effect=OSError("no such file")):
             self.assertEqual(run_tool("/usr/bin/tool", []), "")
 
     def test_timeout_returns_empty(self):
-        with mock.patch("shelfmark.tools.subprocess.run",
+        with mock.patch("titlemark.tools.subprocess.run",
                         side_effect=subprocess.TimeoutExpired("tool", 1)):
             self.assertEqual(run_tool("/usr/bin/tool", []), "")
 

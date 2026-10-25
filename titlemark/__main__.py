@@ -1,4 +1,4 @@
-"""Точка входа: python -m shelfmark ..."""
+"""Точка входа: python -m titlemark ..."""
 
 from .cli import main
 
