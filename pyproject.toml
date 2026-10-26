@@ -31,6 +31,11 @@ classifiers = [
 ]
 dependencies = []          # standard library + external tools only
 
+[project.urls]
+Homepage = "https://github.com/Sergei-Korneev/titlemark"
+Repository = "https://github.com/Sergei-Korneev/titlemark"
+Issues = "https://github.com/Sergei-Korneev/titlemark/issues"
+
 [project.scripts]
 titlemark = "titlemark.cli:main"
 
